@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.automation'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'com.intuit.karate:karate-junit5:1.4.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+    testImplementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'karate.options', System.properties.getProperty('karate.options')
+    systemProperty 'karate.env', System.properties.getProperty('karate.env')
+    outputs.upToDateWhen { false }
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}
+
+tasks.withType(Copy).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+                'Main-Class': 'runner.ReportPublisher'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
